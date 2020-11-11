@@ -17,24 +17,25 @@ Muhammad Fiaz
 CCID:  mfiaz
 """
 
-HUMAN = -1
-COMP = +1
 
-class state(object):
+
+class board_state(the_board):
     """docstring for state"""
     def __init__(self, arg):
-        super(state, self).__init__()
+        super(board_state, self).__init__()
         self.arg = arg
+        self.HUMAN = -1
+        self.COMP = +1
 
-    def evaluate(state):
+    def evaluate(self):
         """
         Function to heuristic evaluation of state.
         :param state: the state of the current board
         :return: +1 if the computer wins; -1 if the human wins; 0 draw
         """
-        if wins(state, COMP):
+        if wins(self.state, COMP):
             score = +1
-        elif wins(state, HUMAN):
+        elif wins(self.state, HUMAN):
             score = -1
         else:
             score = 0
@@ -42,7 +43,7 @@ class state(object):
         return score
 
 
-    def wins(state, player):
+    def wins(self, player):
         """
         This function tests if a specific player wins. Possibilities:
         * Three rows    [X X X] or [O O O]
@@ -53,14 +54,14 @@ class state(object):
         :return: True if the player wins
         """
         win_state = [
-            [state[0][0], state[0][1], state[0][2]],
-            [state[1][0], state[1][1], state[1][2]],
-            [state[2][0], state[2][1], state[2][2]],
-            [state[0][0], state[1][0], state[2][0]],
-            [state[0][1], state[1][1], state[2][1]],
-            [state[0][2], state[1][2], state[2][2]],
-            [state[0][0], state[1][1], state[2][2]],
-            [state[2][0], state[1][1], state[0][2]],
+            [self.state[0][0], self.state[0][1], self.state[0][2]],
+            [self.state[1][0], self.state[1][1], self.state[1][2]],
+            [self.state[2][0], self.state[2][1], self.state[2][2]],
+            [self.state[0][0], self.state[1][0], self.state[2][0]],
+            [self.state[0][1], self.state[1][1], self.state[2][1]],
+            [self.state[0][2], self.state[1][2], self.state[2][2]],
+            [self.state[0][0], self.state[1][1], self.state[2][2]],
+            [self.state[2][0], self.state[1][1], self.state[0][2]],
         ]
         if [player, player, player] in win_state:
             return True
@@ -68,31 +69,15 @@ class state(object):
             return False
 
 
-    def game_over(state):
+    def game_over(self):
         """
         This function test if the human or computer wins
         :param state: the state of the current board
         :return: True if the human or computer wins
         """
-        return wins(state, HUMAN) or wins(state, COMP)
+        return wins(self.state, HUMAN) or wins(self.state, COMP)
 
-
-    def empty_cells(state):
-        """
-        Each empty cell will be added into cells' list
-        :param state: the state of the current board
-        :return: a list of empty cells
-        """
-        cells = []
-
-        for x, row in enumerate(state):
-            for y, cell in enumerate(row):
-                if cell == 0:
-                    cells.append([x, y])
-
-        return cells
-
-    def minimax(state, depth, player):
+    def minimax(self, depth, player):
         """
         AI function that choice the best move
         :param state: current state of the board
@@ -106,15 +91,15 @@ class state(object):
         else:
             best = [-1, -1, +infinity]
 
-        if depth == 0 or game_over(state):
-            score = evaluate(state)
+        if depth == 0 or game_over(self.state):
+            score = evaluate(self.state)
             return [-1, -1, score]
 
-        for cell in empty_cells(state):
+        for cell in empty_cells(self.state):
             x, y = cell[0], cell[1]
-            state[x][y] = player
-            score = minimax(state, depth - 1, -player)
-            state[x][y] = 0
+            self.state[x][y] = player
+            score = minimax(self.state, depth - 1, -player)
+            self.state[x][y] = 0
             score[0], score[1] = x, y
 
             if player == COMP:
@@ -126,7 +111,7 @@ class state(object):
 
         return best
         
-    def render(state, c_choice, h_choice):
+    def render(self, c_choice, h_choice):
         """
         Print the board on console
         :param state: current state of the board
@@ -140,79 +125,13 @@ class state(object):
         str_line = '---------------'
 
         print('\n' + str_line)
-        for row in state:
+        for row in self.state:
             for cell in row:
                 symbol = chars[cell]
                 print(f'| {symbol} |', end='')
             print('\n' + str_line)
 
-    def main():
-        """
-        Main function that calls all functions
-        """
-        # Paul Lu.  Set the seed to get deterministic behaviour for each run.
-        #       Makes it easier for testing and tracing for understanding.
-        randomseed(274 + 2020)
 
-        clean()
-        h_choice = ''  # X or O
-        c_choice = ''  # X or O
-        first = ''  # if human is the first
-
-        # Human chooses X or O to play
-        while h_choice != 'O' and h_choice != 'X':
-            try:
-                print('')
-                h_choice = input('Choose X or O\nChosen: ').upper()
-            except (EOFError, KeyboardInterrupt):
-                print('Bye')
-                exit()
-            except (KeyError, ValueError):
-                print('Bad choice')
-
-        # Setting computer's choice
-        if h_choice == 'X':
-            c_choice = 'O'
-        else:
-            c_choice = 'X'
-
-        # Human may starts first
-        clean()
-        while first != 'Y' and first != 'N':
-            try:
-                first = input('First to start?[y/n]: ').upper()
-            except (EOFError, KeyboardInterrupt):
-                print('Bye')
-                exit()
-            except (KeyError, ValueError):
-                print('Bad choice')
-
-        # Main loop of this game
-        while len(empty_cells(board)) > 0 and not game_over(board):
-            if first == 'N':
-                ai_turn(c_choice, h_choice)
-                first = ''
-
-            human_turn(c_choice, h_choice)
-            ai_turn(c_choice, h_choice)
-
-        # Game over message
-        if wins(board, HUMAN):
-            clean()
-            print(f'Human turn [{h_choice}]')
-            render(board, c_choice, h_choice)
-            print('YOU WIN!')
-        elif wins(board, COMP):
-            clean()
-            print(f'Computer turn [{c_choice}]')
-            render(board, c_choice, h_choice)
-            print('YOU LOSE!')
-        else:
-            clean()
-            render(board, c_choice, h_choice)
-            print('DRAW!')
-
-        exit()
 
     def ai_turn(c_choice, h_choice):
         """
@@ -234,7 +153,7 @@ class state(object):
             x = choice([0, 1, 2])
             y = choice([0, 1, 2])
         else:
-            move = minimax(board, depth, COMP)
+            move = minimax(depth, COMP)
             x, y = move[0], move[1]
 
         set_move(x, y, COMP)
@@ -263,7 +182,7 @@ class state(object):
 
         clean()
         print(f'Human turn [{h_choice}]')
-        render(board, c_choice, h_choice)
+        render(self.board, c_choice, h_choice)
 
         while move < 1 or move > 9:
             try:
@@ -280,17 +199,30 @@ class state(object):
             except (KeyError, ValueError):
                 print('Bad choice')
 
-class board(object):
+class the_board(object):
     """docstring for board"""
-    def __init__(self, arg):
-        super(board, self).__init__()
-        self.arg = arg
+    def __init__(self):
+        super(the_board, board).__init__()
         self.board = [
         [0, 0, 0],
         [0, 0, 0],
         [0, 0, 0],
         ]
 
+    def empty_cells(self):
+        """
+        Each empty cell will be added into cells' list
+        :param state: the state of the current board
+        :return: a list of empty cells
+        """
+        cells = []
+
+        for x, row in enumerate(self.state):
+            for y, cell in enumerate(row):
+                if cell == 0:
+                    cells.append([x, y])
+
+        return cells
 
     def valid_move(x, y):
         """
@@ -299,7 +231,7 @@ class board(object):
         :param y: Y coordinate
         :return: True if the board[x][y] is empty
         """
-        if [x, y] in empty_cells(board):
+        if [x, y] in empty_cells(self.board):
             return True
         else:
             return False
@@ -313,7 +245,7 @@ class board(object):
         :param player: the current player
         """
         if valid_move(x, y):
-            board[x][y] = player
+            self.board[x][y] = player
             return True
         else:
             return False
@@ -332,6 +264,73 @@ class board(object):
         else:
             system('clear')
 
+def main():
+    """
+    Main function that calls all functions
+    """
+    # Paul Lu.  Set the seed to get deterministic behaviour for each run.
+    #       Makes it easier for testing and tracing for understanding.
+    randomseed(274 + 2020)
+
+    clean()
+    h_choice = ''  # X or O
+    c_choice = ''  # X or O
+    first = ''  # if human is the first
+
+    # Human chooses X or O to play
+    while h_choice != 'O' and h_choice != 'X':
+        try:
+            print('')
+            h_choice = input('Choose X or O\nChosen: ').upper()
+        except (EOFError, KeyboardInterrupt):
+            print('Bye')
+            exit()
+        except (KeyError, ValueError):
+            print('Bad choice')
+
+    # Setting computer's choice
+    if h_choice == 'X':
+        c_choice = 'O'
+    else:
+        c_choice = 'X'
+
+    # Human may starts first
+    clean()
+    while first != 'Y' and first != 'N':
+        try:
+            first = input('First to start?[y/n]: ').upper()
+        except (EOFError, KeyboardInterrupt):
+            print('Bye')
+            exit()
+        except (KeyError, ValueError):
+            print('Bad choice')
+
+    # Main loop of this game
+    while len(empty_cells(self.board)) > 0 and not game_over(self.board):
+        if first == 'N':
+            ai_turn(c_choice, h_choice)
+            first = ''
+
+        human_turn(c_choice, h_choice)
+        ai_turn(c_choice, h_choice)
+
+    # Game over message
+    if wins(self.board, HUMAN):
+        clean()
+        print(f'Human turn [{h_choice}]')
+        render(self.board, c_choice, h_choice)
+        print('YOU WIN!')
+    elif wins(self.board, COMP):
+        clean()
+        print(f'Computer turn [{c_choice}]')
+        render(self.board, c_choice, h_choice)
+        print('YOU LOSE!')
+    else:
+        clean()
+        render(self.board, c_choice, h_choice)
+        print('DRAW!')
+
+    exit()
 
 if __name__ == '__main__':
     main()
