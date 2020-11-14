@@ -28,11 +28,12 @@ class the_board:
         ]
         return
 
-    def __str__():
+    def __str__(self):
         return(self.type)
 
-    def __repr__():
-        return(self.type)
+    def __repr__(self):
+        representation = "[" + str("<" + str(id(self)) + "> ") + str(self.type) + "]"
+        return(representation)
 
     def empty_cells(self):
         """
@@ -88,6 +89,7 @@ class the_board:
             system('cls')
         else:
             system('clear')
+    
 
 class board_state(the_board):
     """docstring for state"""
@@ -95,6 +97,72 @@ class board_state(the_board):
         super(board_state, self).__init__()
         self.HUMAN = -1
         self.COMP = +1
+
+    def main_function():
+        """
+        Main function that calls all functions
+        """
+        # Paul Lu.  Set the seed to get deterministic behaviour for each run.
+        #       Makes it easier for testing and tracing for understanding.
+        randomseed(274 + 2020)
+    
+        self.clean()
+        h_choice = ''  # X or O
+        c_choice = ''  # X or O
+        first = ''  # if human is the first
+    
+        # Human chooses X or O to play
+        while h_choice != 'O' and h_choice != 'X':
+            try:
+                print('')
+                h_choice = input('Choose X or O\nChosen: ').upper()
+            except (EOFError, KeyboardInterrupt):
+                print('Bye')
+                exit()
+            except (KeyError, ValueError):
+                print('Bad choice')
+    
+        # Setting computer's choice
+        if h_choice == 'X':
+            c_choice = 'O'
+        else:
+            c_choice = 'X'
+    
+        # Human may starts first
+        playing_board.clean()
+        while first != 'Y' and first != 'N':
+            try:
+                first = input('First to start?[y/n]: ').upper()
+            except (EOFError, KeyboardInterrupt):
+                print('Bye')
+                exit()
+            except (KeyError, ValueError):
+                print('Bad choice')
+    
+        # Main loop of this game
+        while len(playing_board.empty_cells()) > 0 and not playing_board.game_over():
+            if first == 'N':
+                playing_board.ai_turn(c_choice, h_choice)
+                first = ''
+    
+            playing_board.human_turn(c_choice, h_choice)
+            playing_board.ai_turn(c_choice, h_choice)
+    
+        # Game over message
+        if playing_board.wins(playing_board.HUMAN):
+            playing_board.clean()
+            print(f'Human turn [{h_choice}]')
+            playing_board.render(c_choice, h_choice)
+            print('YOU WIN!')
+        elif playing_board.wins(playing_board.COMP):
+            playing_board.clean()
+            print(f'Computer turn [{c_choice}]')
+            playing_board.render(c_choice, h_choice)
+            print('YOU LOSE!')
+        else:
+            playing_board.clean()
+            playing_board.render(c_choice, h_choice)
+            print('DRAW!')
 
     def evaluate(self):
         """
@@ -271,72 +339,8 @@ class board_state(the_board):
 
 
 def main():
-    """
-    Main function that calls all functions
-    """
-    # Paul Lu.  Set the seed to get deterministic behaviour for each run.
-    #       Makes it easier for testing and tracing for understanding.
-    randomseed(274 + 2020)
-
     playing_board = board_state()
-    playing_board.clean()
-    h_choice = ''  # X or O
-    c_choice = ''  # X or O
-    first = ''  # if human is the first
-
-    # Human chooses X or O to play
-    while h_choice != 'O' and h_choice != 'X':
-        try:
-            print('')
-            h_choice = input('Choose X or O\nChosen: ').upper()
-        except (EOFError, KeyboardInterrupt):
-            print('Bye')
-            exit()
-        except (KeyError, ValueError):
-            print('Bad choice')
-
-    # Setting computer's choice
-    if h_choice == 'X':
-        c_choice = 'O'
-    else:
-        c_choice = 'X'
-
-    # Human may starts first
-    playing_board.clean()
-    while first != 'Y' and first != 'N':
-        try:
-            first = input('First to start?[y/n]: ').upper()
-        except (EOFError, KeyboardInterrupt):
-            print('Bye')
-            exit()
-        except (KeyError, ValueError):
-            print('Bad choice')
-
-    # Main loop of this game
-    while len(playing_board.empty_cells()) > 0 and not playing_board.game_over():
-        if first == 'N':
-            playing_board.ai_turn(c_choice, h_choice)
-            first = ''
-
-        playing_board.human_turn(c_choice, h_choice)
-        playing_board.ai_turn(c_choice, h_choice)
-
-    # Game over message
-    if playing_board.wins(playing_board.HUMAN):
-        playing_board.clean()
-        print(f'Human turn [{h_choice}]')
-        playing_board.render(c_choice, h_choice)
-        print('YOU WIN!')
-    elif playing_board.wins(playing_board.COMP):
-        playing_board.clean()
-        print(f'Computer turn [{c_choice}]')
-        playing_board.render(c_choice, h_choice)
-        print('YOU LOSE!')
-    else:
-        playing_board.clean()
-        playing_board.render(c_choice, h_choice)
-        print('DRAW!')
-
+    playing_board.main_function()
     exit()
 
 if __name__ == '__main__':
